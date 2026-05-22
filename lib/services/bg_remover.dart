@@ -9,44 +9,44 @@ import 'package:http/http.dart' as http;
 
 class BgRemover {
   /// API key for remove.bg service
-  /// Get your free API key from: https://www.remove.bg/api
-  /// Free tier: 50 API calls per month
-  static const String removeBgApiKey = 'YOUR_REMOVE_BG_API_KEY'; // Replace with your API key
+  /// https://www.remove.bg/api — Free tier: 50 calls/month
+  static const String removeBgApiKey = 'jcqUzyeyx4MgUAUdiQJB1uah';
 
   /// Removes the background from an image at [inputPath] and saves as a PNG
   /// with a transparent background. Returns the new PNG file path, or null on failure.
-  /// First tries remove.bg API, falls back to local processing if API fails
+  /// Always tries remove.bg API first, falls back to local processing if API fails.
   static Future<String?> process(String inputPath) async {
     try {
       final bytes = await File(inputPath).readAsBytes();
 
-      // Try using remove.bg API first if API key is provided
-      if (removeBgApiKey != 'YOUR_REMOVE_BG_API_KEY') {
-        final resultBytes = await _processWithRemoveBgAPI(bytes);
-        if (resultBytes != null) {
-          final dir = await getApplicationDocumentsDirectory();
-          final fileName = 'item_${DateTime.now().millisecondsSinceEpoch}.png';
-          final outPath = p.join(dir.path, fileName);
-          await File(outPath).writeAsBytes(resultBytes);
-          return outPath;
-        }
+      // Always try remove.bg API first
+      final resultBytes = await _processWithRemoveBgAPI(bytes);
+      if (resultBytes != null) {
+        final dir = await getApplicationDocumentsDirectory();
+        final fileName = 'item_${DateTime.now().millisecondsSinceEpoch}.png';
+        final outPath = p.join(dir.path, fileName);
+        await File(outPath).writeAsBytes(resultBytes);
+        debugPrint('✅ Background removed via remove.bg API');
+        return outPath;
       }
 
-      // Fall back to local processing
-      final resultBytes = await processBytes(bytes);
-      if (resultBytes == null) return null;
+      // Fall back to local processing if API fails
+      debugPrint('⚠️ API failed, falling back to local processing');
+      final localResultBytes = await processBytes(bytes);
+      if (localResultBytes == null) return null;
 
       final dir = await getApplicationDocumentsDirectory();
       final fileName = 'item_${DateTime.now().millisecondsSinceEpoch}.png';
       final outPath = p.join(dir.path, fileName);
-      await File(outPath).writeAsBytes(resultBytes);
+      await File(outPath).writeAsBytes(localResultBytes);
       return outPath;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('BgRemover.process error: $e');
       return null;
     }
   }
 
-  /// Uses remove.bg API to remove background - more accurate than local processing
+  /// Uses remove.bg API to remove background — more accurate than local processing
   static Future<Uint8List?> _processWithRemoveBgAPI(Uint8List imageBytes) async {
     try {
       final request = http.MultipartRequest(
@@ -62,31 +62,47 @@ class BgRemover {
       ));
       request.fields['format'] = 'PNG';
       request.fields['type'] = 'auto';
-      request.fields['type_level'] = '2'; // more accurate
+      request.fields['type_level'] = '2'; // more accurate segmentation
       request.fields['quality'] = 'preview'; // faster processing
 
       final response = await request.send().timeout(
         const Duration(seconds: 30),
-        onTimeout: () => throw TimeoutException('API request timeout'),
+        onTimeout: () => throw TimeoutException('Remove.bg API request timed out'),
       );
 
       if (response.statusCode == 200) {
         final responseBytes = await response.stream.toBytes();
         return responseBytes;
       } else {
-        debugPrint('Remove.bg API error: ${response.statusCode}');
+        final body = await response.stream.bytesToString();
+        debugPrint('Remove.bg API error ${response.statusCode}: $body');
         return null;
       }
     } catch (e) {
-      debugPrint('Remove.bg API error: $e');
+      debugPrint('Remove.bg API exception: $e');
       return null;
     }
   }
 
-  /// Removes the background from raw image bytes and returns PNG bytes.
-  /// Returns null on failure.
-  /// This is a fallback local method - not as accurate as remove.bg
+  /// Processes raw image bytes via remove.bg API.
+  /// Used for web platform where file paths are not available.
+  /// Falls back to local processing if API fails.
   static Future<Uint8List?> processBytes(Uint8List bytes) async {
+    // Try API first even for bytes
+    final apiResult = await _processWithRemoveBgAPI(bytes);
+    if (apiResult != null) {
+      debugPrint('✅ Background removed via remove.bg API (bytes)');
+      return apiResult;
+    }
+
+    // Fall back to local flood-fill method
+    debugPrint('⚠️ API failed, using local fallback for bytes');
+    return _localProcessBytes(bytes);
+  }
+
+  /// Local fallback: flood-fill based background removal.
+  /// Less accurate than remove.bg but works offline.
+  static Future<Uint8List?> _localProcessBytes(Uint8List bytes) async {
     try {
       img.Image? image = img.decodeImage(bytes);
       if (image == null) return null;
@@ -99,7 +115,7 @@ class BgRemover {
       final w = image.width;
       final h = image.height;
 
-      // Sample background color from corners and edge midpoints
+      // Sample background color from corners, edge midpoints, and quarter points
       final bgSamples = <List<int>>[
         [0, 0],
         [w - 1, 0],
@@ -109,6 +125,14 @@ class BgRemover {
         [w ~/ 2, h - 1],
         [0, h ~/ 2],
         [w - 1, h ~/ 2],
+        [w ~/ 4, 0],
+        [w * 3 ~/ 4, 0],
+        [w ~/ 4, h - 1],
+        [w * 3 ~/ 4, h - 1],
+        [0, h ~/ 4],
+        [0, h * 3 ~/ 4],
+        [w - 1, h ~/ 4],
+        [w - 1, h * 3 ~/ 4],
       ];
 
       int sumR = 0, sumG = 0, sumB = 0;
@@ -122,15 +146,20 @@ class BgRemover {
       final avgG = sumG ~/ bgSamples.length;
       final avgB = sumB ~/ bgSamples.length;
 
-      // Flood fill transparent from all four corners
-      const tolerance = 35;
+      // Flood fill from all edge midpoints and corners
+      const tolerance = 60;
       _floodFill(image, 0, 0, avgR, avgG, avgB, tolerance);
       _floodFill(image, w - 1, 0, avgR, avgG, avgB, tolerance);
       _floodFill(image, 0, h - 1, avgR, avgG, avgB, tolerance);
       _floodFill(image, w - 1, h - 1, avgR, avgG, avgB, tolerance);
+      _floodFill(image, w ~/ 2, 0, avgR, avgG, avgB, tolerance);
+      _floodFill(image, w ~/ 2, h - 1, avgR, avgG, avgB, tolerance);
+      _floodFill(image, 0, h ~/ 2, avgR, avgG, avgB, tolerance);
+      _floodFill(image, w - 1, h ~/ 2, avgR, avgG, avgB, tolerance);
 
       return Uint8List.fromList(img.encodePng(image));
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Local BgRemover error: $e');
       return null;
     }
   }
@@ -146,7 +175,6 @@ class BgRemover {
   ) {
     final w = image.width;
     final h = image.height;
-    // Use a flat Uint8List as visited map for performance
     final visited = Uint8List(w * h);
     final stack = <int>[startY * w + startX];
 
@@ -168,7 +196,6 @@ class BgRemover {
           (b - bgB).abs() <= tolerance) {
         image.setPixelRgba(x, y, 0, 0, 0, 0); // Fully transparent
 
-        // Add neighbors
         if (x > 0) stack.add(idx - 1);
         if (x < w - 1) stack.add(idx + 1);
         if (y > 0) stack.add(idx - w);

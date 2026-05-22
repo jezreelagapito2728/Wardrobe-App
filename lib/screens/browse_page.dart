@@ -230,7 +230,7 @@ class _BrowsePageState extends State<BrowsePage> {
               children: [
                 Icon(s.icon,
                     size: 18,
-                    color: sel ? Color(0xff1c1c1c) : Colors.grey.shade600),
+                    color: sel ? const Color(0xff1c1c1c) : Colors.grey.shade600),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -261,7 +261,7 @@ class _BrowsePageState extends State<BrowsePage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(currentStyle.icon, size: 15, color: Color(0xff1c1c1c)),
+              Icon(currentStyle.icon, size: 15, color: const Color(0xff1c1c1c)),
               const SizedBox(width: 6),
               Text(
                 currentStyle.label,
@@ -294,7 +294,6 @@ class _BrowsePageState extends State<BrowsePage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      // Shuffle FAB — bottom-right, shuffles immediately
       floatingActionButton: FloatingActionButton(
         onPressed: _shuffle,
         backgroundColor: const Color(0xff1c1c1c),
@@ -395,7 +394,6 @@ class _BrowsePageState extends State<BrowsePage> {
             SizedBox(
               height: 160,
               child: PageView.builder(
-                // key forces a full rebuild each shuffle so new order is shown
                 key: ValueKey('${category}_$_shuffleVersion'),
                 controller: _pageControllers[category],
                 itemCount: items.length,
@@ -437,14 +435,8 @@ class _BrowsePageState extends State<BrowsePage> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.10),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
-        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -456,17 +448,13 @@ class _BrowsePageState extends State<BrowsePage> {
               Image.file(
                 File(imagePath),
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Container(
-                  color: Colors.transparent,
-                  child: const Icon(Icons.broken_image,
-                      size: 40, color: Colors.grey),
+                errorBuilder: (_, __, ___) => const Center(
+                  child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
                 ),
               )
             else
-              Container(
-                color: Colors.transparent,
-                child:
-                    const Icon(Icons.image, size: 40, color: Colors.grey),
+              const Center(
+                child: Icon(Icons.image, size: 40, color: Colors.grey),
               ),
             // Gradient overlay + brand name
             Positioned(

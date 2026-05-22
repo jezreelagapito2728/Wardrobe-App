@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/local_db.dart';
 import 'home_page.dart'; // Adjust path if it's in another folder
+import 'manual_bg_remover_page.dart';
 
 class AddItemPage extends StatefulWidget {
   final File? imageFile;
@@ -55,6 +56,7 @@ class _AddItemPageState extends State<AddItemPage> {
   String? _existingImagePath;
   bool _imageChanged = false;
   bool _isProcessingBg = false;
+  File? _rawPickedFile;          // unprocessed original for manual remover
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -67,15 +69,44 @@ class _AddItemPageState extends State<AddItemPage> {
   }
 
   void _initializeImage() {
-    if (widget.imageFile != null) {
-      _currentImageFile = widget.imageFile;
-    }
-    if (widget.imageBytes != null) {
-      _currentImageBytes = widget.imageBytes;
-    }
     if (widget.existingItem != null &&
         widget.existingItem!['imagePath'] != null) {
       _existingImagePath = widget.existingItem!['imagePath'];
+    }
+
+    // Auto-process background removal for images passed into the page
+    if (widget.imageFile != null || widget.imageBytes != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _processInitialImage();
+      });
+    }
+  }
+
+  Future<void> _processInitialImage() async {
+    setState(() => _isProcessingBg = true);
+
+    try {
+      if (widget.isWeb && widget.imageBytes != null) {
+        final processed = await BgRemover.processBytes(widget.imageBytes!);
+        if (!mounted) return;
+        setState(() {
+          _currentImageBytes = processed ?? widget.imageBytes;
+          _currentImageFile = null;
+          _isProcessingBg = false;
+        });
+      } else if (widget.imageFile != null) {
+        final processedPath = await BgRemover.process(widget.imageFile!.path);
+        if (!mounted) return;
+        setState(() {
+          _currentImageFile = File(processedPath ?? widget.imageFile!.path);
+          _currentImageBytes = null;
+          _isProcessingBg = false;
+        });
+      } else {
+        setState(() => _isProcessingBg = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isProcessingBg = false);
     }
   }
 
@@ -132,6 +163,7 @@ class _AddItemPageState extends State<AddItemPage> {
               ListTile(
                 leading: const Icon(Icons.camera_alt, color: Colors.deepOrange),
                 title: const Text('Camera'),
+                subtitle: const Text('Auto background removal'),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -143,12 +175,39 @@ class _AddItemPageState extends State<AddItemPage> {
                   color: Colors.deepOrange,
                 ),
                 title: const Text('Gallery'),
+                subtitle: const Text('Auto background removal'),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
                 },
               ),
+              // ── Manual background remover option ──────────────────────────
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.deepOrange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.colorize,
+                    color: Colors.deepOrange,
+                  ),
+                ),
+                title: const Text(
+                  'Manual Background Remover',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text(
+                  'Tap colours in the image to remove them manually',
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _openManualBgRemover();
+                },
+              ),
               if (_hasCurrentImage()) ...[
+                const Divider(height: 1, indent: 16, endIndent: 16),
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
                   title: const Text('Remove Image'),
@@ -166,6 +225,43 @@ class _AddItemPageState extends State<AddItemPage> {
     );
   }
 
+  /// Opens the manual remover with the raw unpicked image.
+  /// If we already have a raw picked file, use that; otherwise prompt to pick first.
+  Future<void> _openManualBgRemover() async {
+    File? rawFile = _rawPickedFile;
+
+    // No image picked yet — ask the user to pick one first
+    if (rawFile == null) {
+      final XFile? picked = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 90,
+      );
+      if (picked == null) return;
+      rawFile = File(picked.path);
+      _rawPickedFile = rawFile;
+    }
+
+    if (!mounted) return;
+
+    final result = await Navigator.push<File>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ManualBgRemoverPage(imageFile: rawFile!),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _currentImageFile = result;
+        _currentImageBytes = null;
+        _imageChanged = true;
+      });
+      _showSuccessSnackbar('Manual background removed successfully!');
+    }
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -176,6 +272,9 @@ class _AddItemPageState extends State<AddItemPage> {
       );
 
       if (image == null) return;
+
+      // Save the raw file so the manual remover can use it later
+      _rawPickedFile = File(image.path);
 
       setState(() {
         _imageChanged = true;
@@ -335,6 +434,7 @@ class _AddItemPageState extends State<AddItemPage> {
         }
 
         // ✅ Then navigate safely
+        if (!mounted) return;
         Navigator.pop(
           context,
           true,
@@ -364,7 +464,7 @@ class _AddItemPageState extends State<AddItemPage> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      print("Error saving item: $e");
+      debugPrint("Error saving item: $e");
       _showErrorSnackbar("Error saving item: ${e.toString()}");
     }
   }
@@ -415,8 +515,7 @@ class _AddItemPageState extends State<AddItemPage> {
                           color: Colors.deepOrange,
                         ),
                       ),
-                    )
-                    .toList(),
+                    ),
                 const SizedBox(height: 16),
               ],
             ),
@@ -494,41 +593,46 @@ class _AddItemPageState extends State<AddItemPage> {
                       width: 200,
                       height: 200,
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.grey[300]!),
                       ),
-                      child: Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: _buildImagePreview(),
-                          ),
-                          // Edit overlay
-                          Positioned(
-                            bottom: 8,
-                            right: 8,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.deepOrange,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.edit,
-                                color: Colors.white,
-                                size: 20,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Stack(
+                          children: [
+                            // Checkerboard pattern to indicate transparency
+                            CustomPaint(
+                              size: const Size(200, 200),
+                              painter: _CheckerboardPainter(),
+                            ),
+                            // Image preview on top
+                            _buildImagePreview(),
+                            // Edit overlay
+                            Positioned(
+                              bottom: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.deepOrange,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -750,13 +854,21 @@ class _AddItemPageState extends State<AddItemPage> {
     }
     // Priority: Current new image > existing image > placeholder
     if (_currentImageFile != null) {
-      return Image.file(_currentImageFile!, fit: BoxFit.contain);
+      return SizedBox.expand(
+        child: Image.file(_currentImageFile!, fit: BoxFit.contain),
+      );
     } else if (_currentImageBytes != null) {
-      return Image.memory(_currentImageBytes!, fit: BoxFit.contain);
+      return SizedBox.expand(
+        child: Image.memory(_currentImageBytes!, fit: BoxFit.contain),
+      );
     } else if (_existingImagePath != null && _existingImagePath!.isNotEmpty) {
-      return Image.file(File(_existingImagePath!), fit: BoxFit.contain);
+      return SizedBox.expand(
+        child: Image.file(File(_existingImagePath!), fit: BoxFit.contain),
+      );
     } else {
-      return const Icon(Icons.add_a_photo, size: 64, color: Colors.grey);
+      return const Center(
+        child: Icon(Icons.add_a_photo, size: 64, color: Colors.grey),
+      );
     }
   }
 
@@ -1019,7 +1131,7 @@ class _AddItemPageState extends State<AddItemPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.deepOrange.withOpacity(0.3),
+                  color: Colors.deepOrange.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -1055,4 +1167,28 @@ class _AddItemPageState extends State<AddItemPage> {
       ],
     );
   }
+}
+
+/// Paints a grey/white checkerboard pattern to indicate image transparency.
+class _CheckerboardPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const tileSize = 10.0;
+    final paintLight = Paint()..color = const Color(0xFFE0E0E0);
+    final paintDark = Paint()..color = const Color(0xFFBDBDBD);
+
+    for (double y = 0; y < size.height; y += tileSize) {
+      for (double x = 0; x < size.width; x += tileSize) {
+        final isEven =
+            ((x / tileSize).floor() + (y / tileSize).floor()) % 2 == 0;
+        canvas.drawRect(
+          Rect.fromLTWH(x, y, tileSize, tileSize),
+          isEven ? paintLight : paintDark,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

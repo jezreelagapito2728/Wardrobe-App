@@ -8,7 +8,7 @@ class DownloadPage extends StatelessWidget {
   // - GitHub Releases: https://github.com/yourusername/closet_mate/releases/download/v1.0.0/closet_mate.apk
   // - Firebase Storage: https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/closet_mate.apk
   // - Any web server: https://yourdomain.com/closet_mate.apk
-  static const String APK_DOWNLOAD_URL = 'https://github.com/yourusername/closet_mate/releases/download/v1.0.0/closet_mate.apk'; // REPLACE THIS
+  static const String APK_DOWNLOAD_URL = 'https://github.com/jezreelagapito2728/Wardrobe-App/releases/download/v1.0.0/app-release.apk';
   
   const DownloadPage({super.key});
 
