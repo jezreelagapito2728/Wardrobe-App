@@ -32,14 +32,14 @@ class LandingPage extends StatelessWidget {
 
               // Logo with some breathing room
               Image.asset(
-                'assets/closetmate.jpg',
+                'assets/AIWardrobe.png',
                 height: 150, // Slightly increased height for prominence
                 fit: BoxFit.contain, // Ensures the entire image is visible
               ),
               const SizedBox(height: 30), // Increased spacing after logo
               // App Title
               Text(
-                'Closet Mate',
+                'Wardrobe AI',
                 style: TextStyle(
                   fontSize: 42, // Larger font size for impact
                   fontWeight:

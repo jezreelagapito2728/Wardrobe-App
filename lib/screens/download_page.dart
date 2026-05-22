@@ -3,12 +3,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DownloadPage extends StatelessWidget {
-  // Replace this with your actual APK download URL
-  // You can host it on:
-  // - GitHub Releases: https://github.com/yourusername/closet_mate/releases/download/v1.0.0/closet_mate.apk
-  // - Firebase Storage: https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/closet_mate.apk
-  // - Any web server: https://yourdomain.com/closet_mate.apk
-  static const String APK_DOWNLOAD_URL = 'https://github.com/jezreelagapito2728/Wardrobe-App/releases/app-debug.apk';
+
+  static const String APK_DOWNLOAD_URL = 'https://raw.githubusercontent.com/jezreelagapito2728/Wardrobe-App/main/releases/download/v1.0.0/app-debug.apk';
   
   const DownloadPage({super.key});
 
@@ -19,7 +15,7 @@ class DownloadPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xff1c1c1c),
         title: const Text(
-          'Download Closet Mate',
+          'Download Wardrobe AI',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -36,7 +32,7 @@ class DownloadPage extends StatelessWidget {
               children: [
                 // Title
                 const Text(
-                  'Download Closet Mate APK',
+                  'Download Wardrobe AI APK',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -87,23 +83,6 @@ class DownloadPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
 
-                // Direct Download Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _launchURL(APK_DOWNLOAD_URL),
-                    icon: const Icon(Icons.download),
-                    label: const Text('Download APK Directly'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xff1c1c1c),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 50),
 
                 // Instructions
@@ -150,7 +129,7 @@ class DownloadPage extends StatelessWidget {
                       const SizedBox(height: 12),
                       _buildInstructionStep(
                         '3',
-                        'Go to Downloads and tap the closet_mate.apk file',
+                        'Go to Downloads and tap the Wardrobe AI.apk file',
                       ),
                       const SizedBox(height: 12),
                       _buildInstructionStep(

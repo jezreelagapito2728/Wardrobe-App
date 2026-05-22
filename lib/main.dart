@@ -22,7 +22,7 @@ class DigitalClosetApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Closet Mate',
+      title: 'Wardrobe AI',
       theme: ThemeData(
         primarySwatch: Colors.deepOrange,
         fontFamily: 'Montserrat',

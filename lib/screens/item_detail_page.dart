@@ -78,10 +78,6 @@ class ItemDetailPage extends StatelessWidget {
                     _buildHeader(),
                     const SizedBox(height: 24),
 
-                    // Basic Info Cards
-                    _buildInfoCards(),
-                    const SizedBox(height: 24),
-
                     // Colors Section
                     if ((item['colors'] ?? '').toString().isNotEmpty)
                       _buildColorsSection(),
@@ -188,78 +184,6 @@ class ItemDetailPage extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildInfoCards() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.straighten,
-                label: 'Size',
-                value: item['size'] ?? '-',
-                color: Colors.blue,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.calendar_today,
-                label: 'Purchased',
-                value: item['datePurchased']?.split('T')[0] ?? '-',
-                color: Colors.purple,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 20, color: color),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: color,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

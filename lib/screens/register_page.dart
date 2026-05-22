@@ -156,10 +156,10 @@ class _RegisterPageState extends State<RegisterPage> {
               Center(
                 child: Column(
                   children: [
-                    Image.asset('assets/closetmate.jpg', height: 100),
+                    Image.asset('assets/AIWardrobe.png', height: 100),
                     const SizedBox(height: 16),
                     const Text(
-                      'Create Your Closet Mate Account',
+                      'Create Your Wardrobe AI Account',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,

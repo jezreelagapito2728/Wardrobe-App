@@ -7,7 +7,6 @@ class DBHelper {
 
   DBHelper._internal();
 
-  // 📦 Get or initialize DB
   Future<Database> get database async {
     if (_db != null) return _db!;
     _db = await _initDB();
@@ -17,14 +16,16 @@ class DBHelper {
   Future<Database> _initDB() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'closetmate.db');
+
     return await openDatabase(
       path,
-      version: 6, // ✅ bumped to version 6
+      version: 7, // ✅ bumped to 7 to handle bagPath addition
       onCreate: _onCreate,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute('ALTER TABLE outfits ADD COLUMN name TEXT');
         }
+
         if (oldVersion < 3) {
           await db.execute('ALTER TABLE items ADD COLUMN brand TEXT');
           await db.execute('ALTER TABLE items ADD COLUMN size TEXT');
@@ -34,11 +35,13 @@ class DBHelper {
           await db.execute('ALTER TABLE items ADD COLUMN private INTEGER');
           await db.execute('ALTER TABLE items ADD COLUMN datePurchased TEXT');
         }
+
         if (oldVersion < 4) {
           await db.execute('ALTER TABLE items ADD COLUMN mainCategory TEXT');
         }
-        if (oldVersion < 5 || oldVersion < 6) {
-          // ✅ Upgrade outfits table to use accessoriesPath
+
+        if (oldVersion < 6) {
+          // Recreate outfits table: headPath → accessoriesPath
           await db.execute('''
             CREATE TABLE new_outfits (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,17 +49,36 @@ class DBHelper {
               accessoriesPath TEXT,
               topPath TEXT,
               bottomPath TEXT,
-              shoesPath TEXT
+              shoesPath TEXT,
+              bagPath TEXT
             )
           ''');
 
-          await db.execute('''
-            INSERT INTO new_outfits (id, name, accessoriesPath, topPath, bottomPath, shoesPath)
-            SELECT id, name, headPath, topPath, bottomPath, shoesPath FROM outfits
-          ''');
+          // Try migrating from old schema — headPath may or may not exist
+          try {
+            await db.execute('''
+              INSERT INTO new_outfits (id, name, accessoriesPath, topPath, bottomPath, shoesPath)
+              SELECT id, name, headPath, topPath, bottomPath, shoesPath FROM outfits
+            ''');
+          } catch (_) {
+            // headPath didn't exist, try without it
+            await db.execute('''
+              INSERT INTO new_outfits (id, name, topPath, bottomPath, shoesPath)
+              SELECT id, name, topPath, bottomPath, shoesPath FROM outfits
+            ''');
+          }
 
           await db.execute('DROP TABLE outfits');
           await db.execute('ALTER TABLE new_outfits RENAME TO outfits');
+        }
+
+        // ✅ Only add bagPath if upgrading from version 6 that didn't have it
+        if (oldVersion == 6) {
+          try {
+            await db.execute('ALTER TABLE outfits ADD COLUMN bagPath TEXT');
+          } catch (e) {
+            print('⚠️ bagPath may already exist: $e');
+          }
         }
       },
     );
@@ -91,6 +113,7 @@ class DBHelper {
       )
     ''');
 
+    // ✅ Fresh installs get bagPath from the start
     await db.execute('''
       CREATE TABLE outfits (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +121,8 @@ class DBHelper {
         accessoriesPath TEXT,
         topPath TEXT,
         bottomPath TEXT,
-        shoesPath TEXT
+        shoesPath TEXT,
+        bagPath TEXT
       )
     ''');
   }
@@ -134,7 +158,6 @@ class DBHelper {
     try {
       final db = await database;
       final id = item['id'];
-
       final itemToUpdate = Map<String, dynamic>.from(item)..remove('id');
 
       final result = await db.update(

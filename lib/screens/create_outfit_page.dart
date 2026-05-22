@@ -24,7 +24,6 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
     'Tops',
     'Bottoms',
     'Footwear',
-    'Bag',
   ];
 
   @override
@@ -38,7 +37,6 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
         'Bottoms': widget.outfit!['bottomPath'],
         'Footwear': widget.outfit!['shoesPath'],
         'Accessories': widget.outfit!['accessoriesPath'],
-        'Bag': widget.outfit!['bagPath'],
       };
     } else {
       selectedImages = {for (var cat in predefinedCategories) cat: null};
@@ -87,75 +85,81 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
       builder:
           (_) => DraggableScrollableSheet(
             expand: false,
+            initialChildSize: 0.75,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
             builder:
-                (_, controller) => SingleChildScrollView(
-                  controller: controller,
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Handle bar
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
+                (_, controller) => Column(
+                  children: [
+                    // Handle bar + header (non-scrollable)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                      child: Column(
                         children: [
-                          Icon(
-                            _getCategoryIcon(category),
-                            color: Color(0xff1c1c1c),
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            "Select $category",
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                          Center(
+                            child: Container(
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
                             ),
                           ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Icon(
+                                _getCategoryIcon(category),
+                                color: Color(0xff1c1c1c),
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                "Select $category",
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      items.isEmpty
+                    ),
+                    // Scrollable grid
+                    Expanded(
+                      child: items.isEmpty
                           ? const Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.shopping_bag_outlined,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  "No items found. Please add one first.",
-                                  style: TextStyle(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.shopping_bag_outlined,
+                                    size: 48,
                                     color: Colors.grey,
-                                    fontSize: 16,
                                   ),
-                                ),
-                              ],
-                            ),
-                          )
-                          : SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.6,
-                            child: GridView.builder(
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "No items found. Please add one first.",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : GridView.builder(
+                              controller: controller,
+                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
                                     crossAxisSpacing: 12,
                                     mainAxisSpacing: 12,
-                                    childAspectRatio:
-                                        0.55, // 👈 makes it more square/portrait
+                                    childAspectRatio: 0.55,
                                   ),
                               itemCount: items.length,
                               itemBuilder: (context, index) {
@@ -183,7 +187,6 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        // IMAGE takes up major vertical space
                                         Expanded(
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
@@ -193,16 +196,12 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
                                               color: Colors.grey.shade100,
                                               child: Image.file(
                                                 File(item['imagePath']),
-                                                fit:
-                                                    BoxFit
-                                                        .contain, // fully visible
+                                                fit: BoxFit.contain,
                                                 width: double.infinity,
                                               ),
                                             ),
                                           ),
                                         ),
-
-                                        // DETAILS
                                         Padding(
                                           padding: const EdgeInsets.all(10),
                                           child: Column(
@@ -250,9 +249,8 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
                                 );
                               },
                             ),
-                          ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
           ),
     );
@@ -477,8 +475,6 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
         return Icons.dry_cleaning;
       case 'Footwear':
         return Icons.run_circle_outlined;
-      case 'Bag':
-        return Icons.shopping_bag;
       default:
         return Icons.shopping_bag_outlined;
     }
@@ -492,7 +488,6 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
     final topPath = selectedImages['Tops'];
     final bottomPath = selectedImages['Bottoms'];
     final shoesPath = selectedImages['Footwear'];
-    final bagPath = selectedImages['Bag'];
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -511,7 +506,6 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
       topPath,
       bottomPath,
       shoesPath,
-      bagPath,
     ].every((e) => e == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -530,7 +524,6 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
       'topPath': topPath,
       'bottomPath': bottomPath,
       'shoesPath': shoesPath,
-      'bagPath': bagPath,
     };
 
     try {

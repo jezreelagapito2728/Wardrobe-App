@@ -16,7 +16,6 @@ class _BrowsePageState extends State<BrowsePage> {
     'Tops',
     'Bottoms',
     'Footwear',
-    'Bag',
   ];
 
   static const Map<String, IconData> _categoryIcons = {
@@ -24,7 +23,6 @@ class _BrowsePageState extends State<BrowsePage> {
     'Bottoms':     Icons.straighten,
     'Accessories': Icons.watch,
     'Footwear':    Icons.directions_walk,
-    'Bag':         Icons.shopping_bag,
   };
 
   static const List<_OutfitStyle> _outfitStyles = [
