@@ -361,9 +361,9 @@ class _ManualBgRemoverPageState extends State<ManualBgRemoverPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: Color(0xFFF4EAE0),
       appBar: AppBar(
-        backgroundColor: const Color(0xff1c1c1c),
+        backgroundColor: Color(0xFF4F2D20),
         foregroundColor: Colors.white,
         title: const Text(
           'Manual Background Remover',
@@ -385,7 +385,7 @@ class _ManualBgRemoverPageState extends State<ManualBgRemoverPage> {
             child: const Text(
               'Done',
               style: TextStyle(
-                color: Colors.deepOrange,
+                color: Color(0xFF6E5A3F),
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -394,7 +394,7 @@ class _ManualBgRemoverPageState extends State<ManualBgRemoverPage> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.deepOrange))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF6E5A3F)))
           : Column(
               children: [
                 // ── Mode selector ─────────────────────────────────────────
@@ -415,16 +415,16 @@ class _ManualBgRemoverPageState extends State<ManualBgRemoverPage> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.deepOrange.withValues(alpha: 0.15),
+                    color: Color(0xFF6E5A3F).withValues(alpha: 0.15),
                     border: Border(
-                      bottom: BorderSide(color: Colors.deepOrange.withValues(alpha: 0.3)),
+                      bottom: BorderSide(color: Color(0xFF6E5A3F).withValues(alpha: 0.3)),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         _mode == _EditMode.fill ? Icons.touch_app : Icons.auto_fix_normal,
-                        color: Colors.deepOrange,
+                        color: Color(0xFF6E5A3F),
                         size: 18,
                       ),
                       const SizedBox(width: 10),
@@ -475,7 +475,7 @@ class _ManualBgRemoverPageState extends State<ManualBgRemoverPage> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  CircularProgressIndicator(color: Colors.deepOrange),
+                                  CircularProgressIndicator(color: Color(0xFF6E5A3F)),
                                   SizedBox(height: 12),
                                   Text('Processing…', style: TextStyle(color: Colors.white, fontSize: 14)),
                                 ],
@@ -510,9 +510,9 @@ class _ManualBgRemoverPageState extends State<ManualBgRemoverPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? Colors.deepOrange : Colors.white12,
+          color: isActive ? Color(0xFF6E5A3F) : Colors.white12,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isActive ? Colors.deepOrange : Colors.white24),
+          border: Border.all(color: isActive ? Color(0xFF6E5A3F) : Colors.white24),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -583,7 +583,7 @@ class _ManualBgRemoverPageState extends State<ManualBgRemoverPage> {
   Widget _buildBadge(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: Colors.deepOrange, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: Color(0xFF6E5A3F), borderRadius: BorderRadius.circular(20)),
       child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
     );
   }
@@ -599,10 +599,10 @@ class _ManualBgRemoverPageState extends State<ManualBgRemoverPage> {
         Expanded(
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Colors.deepOrange,
+              activeTrackColor: Color(0xFF6E5A3F),
               inactiveTrackColor: Colors.white.withValues(alpha: 0.15),
-              thumbColor: Colors.deepOrange,
-              overlayColor: Colors.deepOrange.withValues(alpha: 0.2),
+              thumbColor: Color(0xFF6E5A3F),
+              overlayColor: Color(0xFF6E5A3F).withValues(alpha: 0.2),
               trackHeight: 4,
             ),
             child: Slider(

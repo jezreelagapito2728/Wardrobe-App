@@ -154,14 +154,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF4EAE0),
       appBar: AppBar(
         elevation: 0.5,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Color(0xFF4F2D20),
+        foregroundColor: Colors.white,
         title: const Text(
           'Edit Profile',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -302,13 +305,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
               const SizedBox(height: 30),
 
               _isLoading
-                  ? const CircularProgressIndicator(color: Color(0xff1c1c1c))
+                  ? const CircularProgressIndicator(color: Color(0xFF6E5A3F))
                   : SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _saveProfile,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xff1c1c1c),
+                        backgroundColor: Color(0xFF6E5A3F),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

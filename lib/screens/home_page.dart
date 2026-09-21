@@ -8,11 +8,13 @@ import 'add_item_page.dart';
 import '../services/local_db.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'wardrobe_page.dart';
 import 'item_detail_page.dart';
 import 'settings_page.dart';
-import 'create_outfit_page.dart';
 import 'browse_page.dart';
+import 'weather_page.dart';
+import 'gallery_page.dart';
+import 'outfit_view_page.dart';
+import 'create_outfit_page.dart';
 
 class HomePage extends StatefulWidget {
   final String? initialImagePath;
@@ -30,14 +32,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  XFile? _selectedImage;
   late AnimationController _fabAnimationController;
   late Animation<double> _fabAnimation;
 
   final List<Widget> _pages = [
     const ProfileTab(),
-    const WardrobePage(),
     const BrowsePage(),
+    const WeatherPage(),
+    const GalleryPage(),
     const SettingsPage(),
   ];
 
@@ -69,10 +71,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         imageQuality: 85,
       );
       if (image != null) {
-        setState(() {
-          _selectedImage = image;
-        });
-
+        if (!mounted) return;
         Navigator.pop(context);
 
         final Uint8List? bytes = kIsWeb ? await image.readAsBytes() : null;
@@ -97,7 +96,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         });
       }
     } catch (e) {
-      print('Failed to pick image: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -119,7 +117,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
 
     return Scaffold(
-      body: SafeArea(child: _pages[_currentIndex]),
+      body: _pages[_currentIndex],
       floatingActionButton:
           _currentIndex == 0
               ? ScaleTransition(
@@ -131,7 +129,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     });
                     _showAddOptionsDialog(context);
                   },
-                  backgroundColor: const Color(0xff1c1c1c),
+                  backgroundColor: Color(0xFF6E5A3F),
                   foregroundColor: Colors.white,
                   elevation: 8,
                   child: const Icon(Icons.add, size: 28),
@@ -142,7 +140,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -158,21 +156,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           backgroundColor: Colors.white,
           elevation: 0,
           onTap: (index) => setState(() => _currentIndex = index),
-          items: const [
+          items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Profile',
             ),
             BottomNavigationBarItem(
-              icon: Icon(MdiIcons.tshirtCrewOutline),
-              activeIcon: Icon(MdiIcons.tshirtCrew),
-              label: 'Wardrobe',
-            ),
-            BottomNavigationBarItem(
               icon: Icon(Icons.explore_outlined),
               activeIcon: Icon(Icons.explore),
               label: 'Browse',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.wb_sunny_outlined),
+              activeIcon: Icon(Icons.wb_sunny),
+              label: 'Weather',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.photo_library_outlined),
+              activeIcon: Icon(Icons.photo_library),
+              label: 'Gallery',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
@@ -251,12 +254,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -383,12 +386,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -546,7 +549,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
     if (confirmed == true) {
       final dbHelper = DBHelper.instance;
       await dbHelper.deleteItem(item['id']);
-
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Item deleted successfully'),
@@ -614,6 +617,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
                       imageBytes = await File(imagePath).readAsBytes();
                     }
 
+                    if (!mounted) return;
                     final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -661,12 +665,12 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -721,43 +725,79 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
         .collection('users')
         .doc(user.uid);
 
-    return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        color: const Color(0xff1c1c1c),
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: FutureBuilder<DocumentSnapshot>(
-                future: userDoc.get(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox(
-                      height: 300,
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
+    return Container(
+      color: Theme.of(context).appBarTheme.backgroundColor,
+      child: SafeArea(
+        bottom: false,
+        child: Scaffold(
+          body: RefreshIndicator(
+            onRefresh: _refreshData,
+            color: const Color(0xff1c1c1c),
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: FutureBuilder<DocumentSnapshot>(
+                    future: userDoc.get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          height: 300,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
 
-                  if (!snapshot.hasData || !snapshot.data!.exists) {
-                    return const SizedBox(
-                      height: 300,
-                      child: Center(child: Text("User data not found")),
-                    );
-                  }
+                      if (!snapshot.hasData || !snapshot.data!.exists) {
+                        return const SizedBox(
+                          height: 300,
+                          child: Center(child: Text("User data not found")),
+                        );
+                      }
 
-                  final userData =
-                      snapshot.data!.data() as Map<String, dynamic>;
-                  final fullName = userData['fullName'] ?? 'No Name';
-                  final username = userData['username'] ?? 'No Username';
+                      final userData =
+                          snapshot.data!.data() as Map<String, dynamic>;
+                      final fullName = userData['fullName'] ?? 'No Name';
+                      final username = userData['username'] ?? 'No Username';
 
-                  return _buildProfileHeader(fullName, username);
-                },
-              ),
+                      return _buildProfileHeader(fullName, username);
+                    },
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => CreateOutfitPage()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF6E5A3F),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add),
+                            SizedBox(width: 8),
+                            Text('Create Outfit'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                if (_items.isNotEmpty)
+                  SliverToBoxAdapter(child: _buildCategoryFilter()),
+                _buildItemGrid(),
+              ],
             ),
-            if (_items.isNotEmpty)
-              SliverToBoxAdapter(child: _buildCategoryFilter()),
-            _buildItemGrid(),
-          ],
+          ),
         ),
       ),
     );
@@ -767,7 +807,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xff1c1c1c), const Color(0xff1c1c1c)],
+          colors: [const Color(0xFF4F2D20), const Color(0xFF4F2D20)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -811,7 +851,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
             Container(
               padding: const EdgeInsets.all(1), // was 2
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha:0.2),
                 borderRadius: BorderRadius.circular(60),
               ),
               child: const CircleAvatar(
@@ -840,7 +880,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
               '@$username',
               style: TextStyle(
                 fontSize: 12, // was 14
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha:0.8),
               ),
             ),
             const SizedBox(height: 10), // was 18
@@ -851,7 +891,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha:0.1),
                     blurRadius: 12, // was 20
                     offset: const Offset(0, 6), // was 10
                   ),
@@ -872,12 +912,19 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
                     width: 1,
                     color: Colors.grey.shade300,
                   ),
-                  _buildStatCard(
-                    'Outfits',
-                    _outfitCount,
-                    Icons.style,
-                    iconSize: 18,
-                    fontSize: 20,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const OutfitViewPage()),
+                      );
+                    },
+                    child: _buildStatCard(
+                      'Outfits',
+                      _outfitCount,
+                      Icons.style,
+                      iconSize: 18,
+                      fontSize: 20,
+                    ),
                   ),
                 ],
               ),
@@ -902,7 +949,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
         Container(
           padding: const EdgeInsets.all(8), // was 12
           decoration: BoxDecoration(
-            color: const Color(0xff1c1c1c).withOpacity(0.1),
+            color: const Color(0xff1c1c1c).withValues(alpha:0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: const Color(0xff1c1c1c), size: iconSize),
@@ -1040,6 +1087,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
               imageBytes = await File(imagePath).readAsBytes();
             }
 
+            if (!mounted) return;
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
@@ -1064,7 +1112,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha:0.08),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -1168,7 +1216,7 @@ class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
                                     decoration: BoxDecoration(
                                       color: const Color(
                                         0xff1c1c1c,
-                                      ).withOpacity(0.1),
+                                      ).withValues(alpha:0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(

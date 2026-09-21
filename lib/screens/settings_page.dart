@@ -18,71 +18,63 @@ class _SettingsPageState extends State<SettingsPage> {
   bool showLanguage = false;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        backgroundColor: const Color(0xff1c1c1c),
-        title: const Text(
-          'Settings',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text(
+        'Settings',
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          children: [
-            const SizedBox(height: 10),
+    ),
+    body: ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      children: [
+        const SizedBox(height: 10),
 
-            // 👤 Edit Profile
-            _buildSettingTile(
-              icon: Icons.person_outline,
-              label: 'Edit Profile',
-              onTap: () {
-                Navigator.pushNamed(context, '/edit-profile');
-              },
-            ),
-
-            const Divider(height: 20),
-
-            // � Download
-            _buildSettingTile(
-              icon: Icons.download_outlined,
-              label: 'Download App',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DownloadPage(),
-                  ),
-                );
-              },
-            ),
-
-            const Divider(height: 20),
-
-            // �🚪 Logout
-            _buildSettingTile(
-              icon: Icons.logout,
-              label: 'Logout',
-              onTap: () {
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/',
-                  (route) => false,
-                );
-              },
-            ),
-          ],
+        // 👤 Edit Profile
+        _buildSettingTile(
+          icon: Icons.person_outline,
+          label: 'Edit Profile',
+          onTap: () {
+            Navigator.pushNamed(context, '/edit-profile');
+          },
         ),
-      ),
-    );
-  }
+
+        const Divider(height: 20),
+
+        // ⬇️ Download
+        _buildSettingTile(
+          icon: Icons.download_outlined,
+          label: 'Download App',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const DownloadPage(),
+              ),
+            );
+          },
+        ),
+
+        const Divider(height: 20),
+
+        // 🚪 Logout
+        _buildSettingTile(
+          icon: Icons.logout,
+          label: 'Logout',
+          onTap: () {
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/',
+              (route) => false,
+            );
+          },
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildSettingTile({
     required IconData icon,

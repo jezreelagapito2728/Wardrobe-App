@@ -155,7 +155,7 @@ class _AddItemPageState extends State<AddItemPage> {
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.camera_alt, color: Colors.deepOrange),
+                leading: const Icon(Icons.camera_alt, color: Color(0xFF6E5A3F)),
                 title: const Text('Camera'),
                 subtitle: const Text('Auto background removal'),
                 onTap: () {
@@ -164,7 +164,7 @@ class _AddItemPageState extends State<AddItemPage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library, color: Colors.deepOrange),
+                leading: const Icon(Icons.photo_library, color: Color(0xFF6E5A3F)),
                 title: const Text('Gallery'),
                 subtitle: const Text('Auto background removal'),
                 onTap: () {
@@ -177,10 +177,10 @@ class _AddItemPageState extends State<AddItemPage> {
                 leading: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.deepOrange.withValues(alpha: 0.1),
+                    color: Color(0xFF6E5A3F).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.colorize, color: Colors.deepOrange),
+                  child: const Icon(Icons.colorize, color: Color(0xFF6E5A3F)),
                 ),
                 title: const Text(
                   'Manual Background Remover',
@@ -445,18 +445,21 @@ class _AddItemPageState extends State<AddItemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Color(0xFFF4EAE0),
       appBar: AppBar(
         title: Text(
           widget.existingItem != null ? 'Edit Item' : 'Add New Item',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFF4F2D20),
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
@@ -494,7 +497,7 @@ class _AddItemPageState extends State<AddItemPage> {
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.deepOrange,
+                                  color: Color(0xFF6E5A3F),
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
@@ -630,7 +633,7 @@ class _AddItemPageState extends State<AddItemPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Colors.deepOrange),
+            CircularProgressIndicator(color: Color(0xFF6E5A3F)),
             SizedBox(height: 10),
             Text(
               'Removing background…',
@@ -662,7 +665,7 @@ class _AddItemPageState extends State<AddItemPage> {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: Colors.deepOrange, size: 24),
+        Icon(icon, color: Color(0xFF6E5A3F), size: 24),
         const SizedBox(width: 12),
         Text(
           title,
@@ -696,7 +699,7 @@ class _AddItemPageState extends State<AddItemPage> {
           keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, color: Colors.deepOrange),
+            prefixIcon: Icon(icon, color: Color(0xFF6E5A3F)),
             suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
             prefixText: prefix,
             border: OutlineInputBorder(
@@ -709,7 +712,7 @@ class _AddItemPageState extends State<AddItemPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Colors.deepOrange, width: 2),
+              borderSide: const BorderSide(color: Color(0xFF6E5A3F), width: 2),
             ),
             filled: true,
             fillColor: Colors.grey[50],
@@ -738,7 +741,7 @@ class _AddItemPageState extends State<AddItemPage> {
           initialValue: value,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, color: Colors.deepOrange),
+            prefixIcon: Icon(icon, color: Color(0xFF6E5A3F)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(color: Colors.grey[300]!),
@@ -749,7 +752,7 @@ class _AddItemPageState extends State<AddItemPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Colors.deepOrange, width: 2),
+              borderSide: const BorderSide(color: Color(0xFF6E5A3F), width: 2),
             ),
             filled: true,
             fillColor: Colors.grey[50],
@@ -778,9 +781,9 @@ class _AddItemPageState extends State<AddItemPage> {
           controller: controller,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, color: Colors.deepOrange),
+            prefixIcon: Icon(icon, color: Color(0xFF6E5A3F)),
             suffixIcon: IconButton(
-              icon: const Icon(Icons.add, color: Colors.deepOrange),
+              icon: const Icon(Icons.add, color: Color(0xFF6E5A3F)),
               onPressed: () => onSubmitted(controller.text),
             ),
             border: OutlineInputBorder(
@@ -793,7 +796,7 @@ class _AddItemPageState extends State<AddItemPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Colors.deepOrange, width: 2),
+              borderSide: const BorderSide(color: Color(0xFF6E5A3F), width: 2),
             ),
             filled: true,
             fillColor: Colors.grey[50],
@@ -824,9 +827,11 @@ class _AddItemPageState extends State<AddItemPage> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.deepOrange[50],
+                    color: Color(0xFF6E5A3F).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.deepOrange[200]!),
+                    border: Border.all(
+                      color: Color(0xFF6E5A3F).withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -834,7 +839,7 @@ class _AddItemPageState extends State<AddItemPage> {
                       Text(
                         item,
                         style: TextStyle(
-                          color: Colors.deepOrange[700],
+                          color: Color(0xFF6E5A3F),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -844,7 +849,7 @@ class _AddItemPageState extends State<AddItemPage> {
                         child: Icon(
                           Icons.close,
                           size: 16,
-                          color: Colors.deepOrange[700],
+                          color: Color(0xFF6E5A3F),
                         ),
                       ),
                     ],
@@ -909,14 +914,14 @@ class _AddItemPageState extends State<AddItemPage> {
             height: 56,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Colors.deepOrange, Colors.orange],
+                colors: [Color(0xFF6E5A3F), Colors.orange],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.deepOrange.withValues(alpha: 0.3),
+                  color: Color(0xFF6E5A3F).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),

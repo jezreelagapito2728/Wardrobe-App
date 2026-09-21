@@ -36,12 +36,12 @@ class _RegisterPageState extends State<RegisterPage> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xff1c1c1c),
+              primary: Color(0xFF6E5A3F),
               onPrimary: Colors.white,
-              onSurface: Color(0xff1c1c1c),
+              onSurface: Color(0xFF6E5A3F),
             ),
             textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(foregroundColor: Color(0xff1c1c1c)),
+              style: TextButton.styleFrom(foregroundColor: Color(0xFF6E5A3F)),
             ),
           ),
           child: child!,
@@ -235,12 +235,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 20),
                       _isLoading
                           ? const CircularProgressIndicator(
-                            color: Color(0xff1c1c1c),
+                            color: Color(0xFF6E5A3F),
                           )
                           : ElevatedButton(
                             onPressed: _register,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xff1c1c1c),
+                              backgroundColor: Color(0xFF6E5A3F),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 40,
@@ -306,7 +306,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xff1c1c1c), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF6E5A3F), width: 2),
           ),
         ),
       ),
@@ -345,7 +345,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xff1c1c1c), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF6E5A3F), width: 2),
           ),
         ),
       ),
@@ -371,7 +371,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xff1c1c1c), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF6E5A3F), width: 2),
           ),
         ),
         items:
@@ -412,7 +412,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xff1c1c1c), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF6E5A3F), width: 2),
           ),
         ),
       ),

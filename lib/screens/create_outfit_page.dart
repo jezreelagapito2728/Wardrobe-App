@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../services/local_db.dart';
+import 'outfit_detail_page.dart';
 
 class CreateOutfitPage extends StatefulWidget {
   final Map<String, dynamic>? outfit;
@@ -527,33 +529,35 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
     };
 
     try {
+      final outfitId;
       if (isEditing) {
         await DBHelper.instance.updateOutfit(widget.outfit!['id'], outfit);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text("✅ Outfit updated!"),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
+        outfitId = widget.outfit!['id'];
       } else {
-        await DBHelper.instance.addOutfit(outfit);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text("✅ Outfit saved!"),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
+        outfitId = await DBHelper.instance.addOutfit(outfit);
       }
 
-      Navigator.pop(context, true);
+      final outfitWithId = {...outfit, 'id': outfitId};
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isEditing ? "✅ Outfit updated!" : "✅ Outfit saved!"),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+
+      // Navigate to the outfit detail page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OutfitDetailPage(
+            outfit: outfitWithId,
+            isWeb: kIsWeb,
+          ),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -572,7 +576,7 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(isEditing ? "Edit Outfit" : "Create Outfit"),
-        backgroundColor: Color(0xff1c1c1c),
+        backgroundColor: Color(0xFF4F2D20),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -643,7 +647,7 @@ class _CreateOutfitPageState extends State<CreateOutfitPage> {
               child: ElevatedButton(
                 onPressed: _saveOrUpdateOutfit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xff1c1c1c),
+                  backgroundColor: Color(0xFF6E5A3F),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),

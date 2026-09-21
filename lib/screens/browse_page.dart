@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../services/local_db.dart';
+import 'create_outfit_page.dart';
+import 'chat_screen.dart';
 
 class BrowsePage extends StatefulWidget {
   const BrowsePage({super.key});
@@ -284,20 +286,51 @@ class _BrowsePageState extends State<BrowsePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF4EAE0),
       appBar: AppBar(
         title: const Text('Browse'),
-        backgroundColor: const Color(0xff1c1c1c),
+        backgroundColor: Color(0xFF4F2D20),
         foregroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _shuffle,
-        backgroundColor: const Color(0xff1c1c1c),
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.shuffle),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ChatScreen()),
+              );
+            },
+            backgroundColor: Color(0xFF6E5A3F),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: const Icon(Icons.chat_bubble_outline),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => CreateOutfitPage()),
+              );
+            },
+            backgroundColor: Color(0xFF6E5A3F),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: const Icon(Icons.add),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            onPressed: _shuffle,
+            backgroundColor: Color(0xFF6E5A3F),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: const Icon(Icons.shuffle),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: _loading

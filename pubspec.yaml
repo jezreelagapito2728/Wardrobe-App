@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  material_design_icons_flutter: ^5.0.6595
+  material_design_icons_flutter: ^7.0.7296
   firebase_core: ^3.13.1
   firebase_auth: ^5.5.3
   cloud_firestore: ^5.6.6
@@ -26,7 +26,10 @@ dependencies:
   qr_flutter: ^4.1.0
   url_launcher: ^6.2.0
   http: ^1.1.0
+  geolocator: ^14.0.3
+  visibility_detector: ^0.4.0+2   # refreshes weather when the screen is shown
   cupertino_icons: ^1.0.8
+  permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:
@@ -47,5 +50,4 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/
-    - assets/AIWardrobe.png
+    - assets/   # already includes AIWardrobe.png, so the extra line was redundant

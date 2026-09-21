@@ -9,6 +9,7 @@ import 'screens/register_page.dart';
 import 'screens/home_page.dart';
 import 'screens/settings_page.dart';
 import 'screens/edit_profile_page.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,15 +25,48 @@ class DigitalClosetApp extends StatelessWidget {
     return MaterialApp(
       title: 'Wardrobe AI',
       theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
+        colorScheme: ColorScheme.light(
+          primary: Color(0xFFD09D64),
+          secondary: Color(0xFF6E5A3F),
+          background: Color(0xFFF4EAE0),
+        ),
+        scaffoldBackgroundColor: Color(0xFFF4EAE0),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF4F2D20),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 0,            // stops the color shifting on scroll
+          surfaceTintColor: Colors.transparent, // stops Material 3 tinting the bar
+          centerTitle: false,
+          toolbarHeight: kToolbarHeight,        // standard 56 on every screen
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Color(0xFF4F2D20),  // same as backgroundColor
+            statusBarIconBrightness: Brightness.light, // Android icons
+            statusBarBrightness: Brightness.dark,      // iOS icons
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF6E5A3F),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            textStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            elevation: 5,
+          ),
+        ),
         fontFamily: 'Montserrat',
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        scaffoldBackgroundColor: Colors.grey[50],
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
           hintStyle: TextStyle(color: Colors.grey.shade500),
-          labelStyle: TextStyle(color: Colors.deepOrange.shade700),
+          labelStyle: TextStyle(color: Color(0xFFD09D64)),
           prefixIconColor: Colors.grey.shade600,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -44,7 +78,7 @@ class DigitalClosetApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.deepOrange, width: 2),
+            borderSide: BorderSide(color: Color(0xFFD09D64), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -57,21 +91,6 @@ class DigitalClosetApp extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(
             vertical: 16,
             horizontal: 16,
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepOrange,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-            textStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-            elevation: 5,
           ),
         ),
       ),

@@ -23,15 +23,15 @@ class ItemDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Color(0xFFF4EAE0),
       body: CustomScrollView(
         slivers: [
           // Custom App Bar with Image
           SliverAppBar(
             expandedHeight: 600,
             pinned: true,
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: Color(0xFF4F2D20),
+            foregroundColor: Colors.white,
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
