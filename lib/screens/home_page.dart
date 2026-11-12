@@ -1,20 +1,163 @@
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:io';
+import '../../utils/constants.dart';
 
 import 'add_item_page.dart';
-import '../services/local_db.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'item_detail_page.dart';
 import 'settings_page.dart';
 import 'browse_page.dart';
 import 'weather_page.dart';
 import 'gallery_page.dart';
-import 'outfit_view_page.dart';
-import 'create_outfit_page.dart';
+import 'profile_tab.dart';
+
+// ============ Navigation Item ============
+
+class _NavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+
+  const _NavItem({required this.icon, required this.activeIcon, required this.label});
+
+  BottomNavigationBarItem toBottomNavItem() {
+    return BottomNavigationBarItem(
+      icon: Icon(icon, size: 24),
+      activeIcon: Icon(activeIcon, size: 24),
+      label: label,
+    );
+  }
+}
+
+
+// ============ Modern Bottom Navigation Bar ============
+
+class _ModernBottomNavBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final Animation<double> animation;
+  final bool hasFab;
+  final VoidCallback? onAddItem;
+
+  const _ModernBottomNavBar({
+    required this.currentIndex,
+    required this.onTap,
+    required this.animation,
+    this.hasFab = false,
+    this.onAddItem,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      const _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profile'),
+      const _NavItem(icon: Icons.explore_outlined, activeIcon: Icons.explore_rounded, label: 'Browse'),
+      const _NavItem(icon: Icons.wb_sunny_outlined, activeIcon: Icons.wb_sunny_rounded, label: 'Weather'),
+      const _NavItem(icon: Icons.photo_library_outlined, activeIcon: Icons.photo_library_rounded, label: 'Gallery'),
+      const _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings_rounded, label: 'Settings'),
+    ];
+
+    // Show add button only on Browse tab (index 1)
+    final showAddButton = currentIndex == 1 && onAddItem != null;
+
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, 100 * (1 - animation.value)),
+          child: Opacity(
+            opacity: animation.value,
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              decoration: BoxDecoration(
+                color: linen,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: softSage.withValues(alpha: 0.2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: forestInk.withValues(alpha: 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  BottomAppBar(
+                    color: Colors.transparent,
+                    elevation: 0,
+                    notchMargin: 8,
+                    shape: hasFab ? const CircularNotchedRectangle() : null,
+                    child: SizedBox(
+                      height: 64,
+                      child: BottomNavigationBar(
+                        currentIndex: currentIndex,
+                        type: BottomNavigationBarType.fixed,
+                        selectedItemColor: forestInk,
+                        unselectedItemColor: forestInk.withValues(alpha: 0.4),
+                        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        onTap: onTap,
+                        items: items.map((item) => item.toBottomNavItem()).toList(),
+                      ),
+                    ),
+                  ),
+                  // Add Item button positioned at top right of navbar
+                  if (showAddButton)
+                    Positioned(
+                      top: -24,
+                      right: 8,
+                      child: MediaQuery(
+                        // Ensure button stays within safe area and doesn't overlap navbar content
+                        data: MediaQuery.of(context).copyWith(
+                          padding: EdgeInsets.zero,
+                          viewInsets: EdgeInsets.zero,
+                        ),
+                        child: _AddItemButton(onPressed: onAddItem!),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AddItemButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _AddItemButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: forestInk,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: forestInk.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.add_rounded, color: linen, size: 24),
+        ),
+      ),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   final String? initialImagePath;
@@ -32,8 +175,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  late AnimationController _fabAnimationController;
-  late Animation<double> _fabAnimation;
+  late AnimationController _navAnimationController;
+  late Animation<double> _navAnimation;
 
   final List<Widget> _pages = [
     const ProfileTab(),
@@ -46,1217 +189,58 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _fabAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+    _navAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _fabAnimation = Tween<double>(begin: 1.0, end: 0.85).animate(
-      CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
+    _navAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _navAnimationController, curve: Curves.easeOutCubic),
     );
+    _navAnimationController.forward();
   }
 
   @override
   void dispose() {
-    _fabAnimationController.dispose();
+    _navAnimationController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickImage(ImageSource source) async {
-    final ImagePicker picker = ImagePicker();
-    try {
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
-      );
-      if (image != null) {
-        if (!mounted) return;
-        Navigator.pop(context);
-
-        final Uint8List? bytes = kIsWeb ? await image.readAsBytes() : null;
-
-        if (!mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => AddItemPage(
-                  isWeb: kIsWeb,
-                  imageFile: kIsWeb ? null : File(image.path),
-                  imageBytes: bytes,
-                ),
-          ),
-        ).then((result) {
-          if (result == true) {
-            setState(() {
-              _pages[0] = const ProfileTab();
-            });
-          }
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to pick image: $e'),
-          backgroundColor: Colors.red.shade400,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_pages.isEmpty) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: linen,
+        body: Center(child: CircularProgressIndicator(color: forestInk)),
+      );
     }
+
+    // Show add item button on Browse tab
+    final showAddButton = _currentIndex == 1;
 
     return Scaffold(
+      backgroundColor: linen,
       body: _pages[_currentIndex],
-      floatingActionButton:
-          _currentIndex == 0
-              ? ScaleTransition(
-                scale: _fabAnimation,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    _fabAnimationController.forward().then((_) {
-                      _fabAnimationController.reverse();
-                    });
-                    _showAddOptionsDialog(context);
-                  },
-                  backgroundColor: Color(0xFF6E5A3F),
-                  foregroundColor: Colors.white,
-                  elevation: 8,
-                  child: const Icon(Icons.add, size: 28),
-                ),
-              )
-              : null,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xff1c1c1c),
-          unselectedItemColor: Colors.grey.shade500,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          onTap: (index) => setState(() => _currentIndex = index),
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.explore_outlined),
-              activeIcon: Icon(Icons.explore),
-              label: 'Browse',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.wb_sunny_outlined),
-              activeIcon: Icon(Icons.wb_sunny),
-              label: 'Weather',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.photo_library_outlined),
-              activeIcon: Icon(Icons.photo_library),
-              label: 'Gallery',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Settings',
-            ),
-          ],
-        ),
+      floatingActionButton: null,
+      bottomNavigationBar: _ModernBottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+        },
+        animation: _navAnimation,
+        hasFab: false,
+        onAddItem: showAddButton ? _navigateToAddItem : null,
       ),
     );
   }
 
-  void _showAddOptionsDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'What would you like to do?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                _buildActionButton(
-                  context,
-                  icon: Icons.add_box_outlined,
-                  label: 'Add Item',
-                  subtitle: 'Add a new clothing item',
-                  color: const Color(0xff1c1c1c),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showImageSourceSelection(context);
-                  },
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildActionButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 24),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey.shade400,
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
+  void _navigateToAddItem() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddItemPage(
+          isWeb: false,
         ),
       ),
-    );
-  }
-
-  void _showImageSourceSelection(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Choose image source',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                _buildImageSourceButton(
-                  context,
-                  icon: Icons.camera_alt_outlined,
-                  label: 'Take Photo',
-                  subtitle: 'Use camera to capture item',
-                  color: const Color(0xFF4285F4),
-                  onTap: () => _pickImage(ImageSource.camera),
-                ),
-                const SizedBox(height: 16),
-                _buildImageSourceButton(
-                  context,
-                  icon: Icons.photo_library_outlined,
-                  label: 'Choose from Gallery',
-                  subtitle: 'Select from your photos',
-                  color: const Color(0xFF34A853),
-                  onTap: () => _pickImage(ImageSource.gallery),
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildImageSourceButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 24),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey.shade400,
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Enhanced Profile Tab with beautiful design and long-press functionality
-class ProfileTab extends StatefulWidget {
-  const ProfileTab({super.key});
-
-  @override
-  State<ProfileTab> createState() => _ProfileTabState();
-}
-
-String _selectedCategory = 'All';
-Set<String> _availableCategories = {'All'};
-
-class _ProfileTabState extends State<ProfileTab> with TickerProviderStateMixin {
-  int _itemCount = 0;
-  int _outfitCount = 0;
-  List<Map<String, dynamic>> _items = [];
-  late AnimationController _refreshController;
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-    _loadCounts();
-    _loadItems();
-  }
-
-  @override
-  void dispose() {
-    _refreshController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadItems() async {
-    final dbHelper = DBHelper.instance;
-    final loadedItems = await dbHelper.getItems();
-
-    final categories = <String>{'All'};
-    for (var item in loadedItems) {
-      final mainCat = item['mainCategory'] ?? '';
-      if (mainCat.toString().isNotEmpty) {
-        categories.add(mainCat);
-      }
-    }
-
-    setState(() {
-      _items = loadedItems;
-      _availableCategories = categories;
-    });
-  }
-
-  Future<void> _loadCounts() async {
-    final dbHelper = DBHelper.instance;
-    final itemCount = await dbHelper.getItemCount();
-    final outfitCount = await dbHelper.getOutfitCount();
-    setState(() {
-      _itemCount = itemCount;
-      _outfitCount = outfitCount;
-    });
-  }
-
-  Future<void> _refreshData() async {
-    _refreshController.forward();
-    await _loadCounts();
-    await _loadItems();
-    _refreshController.reverse();
-  }
-
-  Future<void> _deleteItem(Map<String, dynamic> item) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text('Delete Item'),
-            content: Text(
-              'Are you sure you want to delete "${item['brand'] ?? 'this item'}"?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Delete'),
-              ),
-            ],
-          ),
-    );
-
-    if (confirmed == true) {
-      final dbHelper = DBHelper.instance;
-      await dbHelper.deleteItem(item['id']);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Item deleted successfully'),
-          backgroundColor: Colors.green.shade400,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-
-      await _refreshData();
-    }
-  }
-
-  void _showItemOptions(Map<String, dynamic> item) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  item['brand'] ?? 'Item Options',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                _buildOptionButton(
-                  icon: Icons.edit_outlined,
-                  label: 'Edit Item',
-                  color: const Color(0xFF4285F4),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final imagePath = item['imagePath'];
-                    final imageFile =
-                        imagePath != null && File(imagePath).existsSync()
-                            ? File(imagePath)
-                            : null;
-
-                    Uint8List? imageBytes;
-                    if (kIsWeb &&
-                        imagePath != null &&
-                        File(imagePath).existsSync()) {
-                      imageBytes = await File(imagePath).readAsBytes();
-                    }
-
-                    if (!mounted) return;
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => ItemDetailPage(
-                              item: item,
-                              imageFile: kIsWeb ? null : imageFile,
-                              imageBytes: imageBytes,
-                              isWeb: kIsWeb,
-                            ),
-                      ),
-                    );
-
-                    if (result == true) {
-                      await _refreshData();
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildOptionButton(
-                  icon: Icons.delete_outline,
-                  label: 'Delete Item',
-                  color: Colors.red,
-                  onTap: () {
-                    Navigator.pop(context);
-                    _deleteItem(item);
-                  },
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildOptionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade800,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey.shade400,
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      return const Scaffold(body: Center(child: Text("Not logged in")));
-    }
-
-    final userDoc = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid);
-
-    return Container(
-      color: Theme.of(context).appBarTheme.backgroundColor,
-      child: SafeArea(
-        bottom: false,
-        child: Scaffold(
-          body: RefreshIndicator(
-            onRefresh: _refreshData,
-            color: const Color(0xff1c1c1c),
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: FutureBuilder<DocumentSnapshot>(
-                    future: userDoc.get(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SizedBox(
-                          height: 300,
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-
-                      if (!snapshot.hasData || !snapshot.data!.exists) {
-                        return const SizedBox(
-                          height: 300,
-                          child: Center(child: Text("User data not found")),
-                        );
-                      }
-
-                      final userData =
-                          snapshot.data!.data() as Map<String, dynamic>;
-                      final fullName = userData['fullName'] ?? 'No Name';
-                      final username = userData['username'] ?? 'No Username';
-
-                      return _buildProfileHeader(fullName, username);
-                    },
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => CreateOutfitPage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF6E5A3F),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add),
-                            SizedBox(width: 8),
-                            Text('Create Outfit'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                if (_items.isNotEmpty)
-                  SliverToBoxAdapter(child: _buildCategoryFilter()),
-                _buildItemGrid(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileHeader(String fullName, String username) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFF4F2D20), const Color(0xFF4F2D20)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8), // was 12
-        child: Column(
-          children: [
-            const SizedBox(height: 8), // was 12
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'My Profile',
-                  style: TextStyle(
-                    fontSize: 20, // was 24
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                RotationTransition(
-                  turns: _refreshController,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.refresh,
-                      color: Colors.white,
-                      size: 22,
-                    ), // was default
-                    onPressed: _refreshData,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10), // was 18
-            Container(
-              padding: const EdgeInsets.all(1), // was 2
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha:0.2),
-                borderRadius: BorderRadius.circular(60),
-              ),
-              child: const CircleAvatar(
-                radius: 28, // was 36
-                backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.person,
-                  size: 28, // was 36
-                  color: Color(0xff1c1c1c),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8), // was 12
-            Center(
-              child: Text(
-                fullName,
-                style: const TextStyle(
-                  fontSize: 15, // was 18
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 2), // was 4
-            Text(
-              '@$username',
-              style: TextStyle(
-                fontSize: 12, // was 14
-                color: Colors.white.withValues(alpha:0.8),
-              ),
-            ),
-            const SizedBox(height: 10), // was 18
-            Container(
-              padding: const EdgeInsets.all(8), // was 12
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha:0.1),
-                    blurRadius: 12, // was 20
-                    offset: const Offset(0, 6), // was 10
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatCard(
-                    'Items',
-                    _itemCount,
-                    Icons.checkroom,
-                    iconSize: 18,
-                    fontSize: 20,
-                  ),
-                  Container(
-                    height: 28, // was 40
-                    width: 1,
-                    color: Colors.grey.shade300,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const OutfitViewPage()),
-                      );
-                    },
-                    child: _buildStatCard(
-                      'Outfits',
-                      _outfitCount,
-                      Icons.style,
-                      iconSize: 18,
-                      fontSize: 20,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 6), // was 10
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Update your _buildStatCard to accept iconSize and fontSize:
-  Widget _buildStatCard(
-    String label,
-    int count,
-    IconData icon, {
-    double iconSize = 24,
-    double fontSize = 28,
-  }) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8), // was 12
-          decoration: BoxDecoration(
-            color: const Color(0xff1c1c1c).withValues(alpha:0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: const Color(0xff1c1c1c), size: iconSize),
-        ),
-        const SizedBox(height: 8), // was 12
-        Text(
-          count.toString(),
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xff1c1c1c),
-          ),
-        ),
-        const SizedBox(height: 2), // was 4
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12, // was 14
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryFilter() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children:
-              _availableCategories.map((category) {
-                final isSelected = _selectedCategory == category;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: FilterChip(
-                    label: Text(category),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
-                    },
-                    backgroundColor: Colors.grey.shade100,
-                    selectedColor: const Color(0xff1c1c1c),
-                    checkmarkColor: Colors.white,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.grey.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(
-                        color:
-                            isSelected
-                                ? const Color(0xff1c1c1c)
-                                : Colors.grey.shade300,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItemGrid() {
-    final filteredItems =
-        _selectedCategory == 'All'
-            ? _items
-            : _items.where((item) {
-              final mainCat = (item['mainCategory'] ?? '').toString();
-              return mainCat == _selectedCategory;
-            }).toList();
-
-    if (filteredItems.isEmpty) {
-      return const SliverFillRemaining(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.checkroom_outlined, size: 64, color: Colors.grey),
-              SizedBox(height: 16),
-              Text(
-                'No items found',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SliverPadding(
-      padding: const EdgeInsets.all(16),
-      sliver: SliverGrid(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-          childAspectRatio:
-              MediaQuery.of(context).size.width > 600
-                  ? 0.5
-                  : 0.55, // <-- Make this smaller!
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        delegate: SliverChildBuilderDelegate((context, index) {
-          final item = filteredItems[index];
-          return _buildItemCard(item);
-        }, childCount: filteredItems.length),
-      ),
-    );
-  }
-
-  Widget _buildItemCard(Map<String, dynamic> item) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return GestureDetector(
-          onTap: () async {
-            final imagePath = item['imagePath'];
-            final imageFile =
-                imagePath != null && File(imagePath).existsSync()
-                    ? File(imagePath)
-                    : null;
-
-            Uint8List? imageBytes;
-            if (kIsWeb && imagePath != null && File(imagePath).existsSync()) {
-              imageBytes = await File(imagePath).readAsBytes();
-            }
-
-            if (!mounted) return;
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) => ItemDetailPage(
-                      item: item,
-                      imageFile: kIsWeb ? null : imageFile,
-                      imageBytes: imageBytes,
-                      isWeb: kIsWeb,
-                    ),
-              ),
-            );
-
-            if (result == true) {
-              await _refreshData();
-            }
-          },
-          onLongPress: () => _showItemOptions(item),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha:0.08),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Image section - takes up most of the space
-                Expanded(
-                  flex: 3,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
-                    child:
-                        item['imagePath'] != null &&
-                                File(item['imagePath']).existsSync()
-                            ? Stack(
-                              children: [
-                                Image.file(
-                                  File(item['imagePath']),
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                ),
-                              ],
-                            )
-                            : Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(20),
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.image_not_supported_outlined,
-                                  size: 40,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                  ),
-                ),
-                // Text section - flexible based on available space
-                Expanded(
-                  flex: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: LayoutBuilder(
-                      builder: (context, textConstraints) {
-                        final availableHeight = textConstraints.maxHeight;
-                        final hasMainCategory = item['mainCategory'] != null;
-
-                        // Calculate if we have enough space for all elements
-                        final minRequiredHeight = hasMainCategory ? 55.0 : 40.0;
-                        final showChip =
-                            hasMainCategory &&
-                            availableHeight > minRequiredHeight;
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Brand name - always visible
-                            Text(
-                              item['brand'] ?? 'No Brand',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.black87,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            // Category - always visible
-                            Text(
-                              item['category'] ?? 'Unknown Category',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 14,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            // Main category chip - only show if there's enough space
-                            if (showChip) ...[
-                              const SizedBox(height: 8),
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.bottomLeft,
-                                  child: Container(
-                                    constraints: BoxConstraints(
-                                      maxWidth: textConstraints.maxWidth * 0.9,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xff1c1c1c,
-                                      ).withValues(alpha:0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      item['mainCategory'],
-                                      style: const TextStyle(
-                                        color: Color(0xff1c1c1c),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ] else if (hasMainCategory) ...[
-                              // If no space for chip, show as small text
-                              const SizedBox(height: 2),
-                              Text(
-                                item['mainCategory'],
-                                style: const TextStyle(
-                                  color: Color(0xff1c1c1c),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

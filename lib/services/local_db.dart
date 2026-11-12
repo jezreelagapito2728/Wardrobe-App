@@ -125,6 +125,175 @@ class DBHelper {
         bagPath TEXT
       )
     ''');
+
+    // Seed sample data for new users
+    await _seedSampleData(db);
+  }
+
+  /// Seeds the database with sample items and outfits for demonstration
+  Future<void> _seedSampleData(Database db) async {
+    // Sample items - using placeholder image paths
+    final sampleItems = [
+      {
+        'imagePath': '',
+        'category': 'T-shirt',
+        'mainCategory': 'Tops',
+        'brand': 'White Cotton Tee',
+        'size': 'M',
+        'price': '29.99',
+        'tags': 'casual,everyday',
+        'colors': 'white',
+        'private': 0,
+        'datePurchased': '2024-01-15',
+      },
+      {
+        'imagePath': '',
+        'category': 'Hoodie',
+        'mainCategory': 'Tops',
+        'brand': 'Black Oversized Hoodie',
+        'size': 'L',
+        'price': '59.99',
+        'tags': 'comfort,winter',
+        'colors': 'black',
+        'private': 0,
+        'datePurchased': '2023-11-20',
+      },
+      {
+        'imagePath': '',
+        'category': 'Jeans',
+        'mainCategory': 'Bottoms',
+        'brand': 'Blue Straight Jeans',
+        'size': '32',
+        'price': '79.99',
+        'tags': 'denim,classic',
+        'colors': 'blue',
+        'private': 0,
+        'datePurchased': '2024-02-10',
+      },
+      {
+        'imagePath': '',
+        'category': 'Trouser',
+        'mainCategory': 'Bottoms',
+        'brand': 'Beige Chino Pants',
+        'size': '32',
+        'price': '49.99',
+        'tags': 'formal,work',
+        'colors': 'beige',
+        'private': 0,
+        'datePurchased': '2024-03-05',
+      },
+      {
+        'imagePath': '',
+        'category': 'Sport Shoes',
+        'mainCategory': 'Footwear',
+        'brand': 'White Sneakers',
+        'size': '42',
+        'price': '129.99',
+        'tags': 'running,casual',
+        'colors': 'white',
+        'private': 0,
+        'datePurchased': '2024-01-20',
+      },
+      {
+        'imagePath': '',
+        'category': 'Boots',
+        'mainCategory': 'Footwear',
+        'brand': 'Brown Leather Boots',
+        'size': '42',
+        'price': '189.99',
+        'tags': 'winter,formal',
+        'colors': 'brown',
+        'private': 0,
+        'datePurchased': '2023-12-01',
+      },
+      {
+        'imagePath': '',
+        'category': 'Scarves',
+        'mainCategory': 'Accessories',
+        'brand': 'Patterned Silk Scarf',
+        'size': 'One Size',
+        'price': '39.99',
+        'tags': 'accessory,formal',
+        'colors': 'multi',
+        'private': 0,
+        'datePurchased': '2024-02-14',
+      },
+      {
+        'imagePath': '',
+        'category': 'Ties',
+        'mainCategory': 'Accessories',
+        'brand': 'Navy Blue Tie',
+        'size': 'One Size',
+        'price': '24.99',
+        'tags': 'formal,business',
+        'colors': 'navy',
+        'private': 0,
+        'datePurchased': '2024-01-10',
+      },
+      {
+        'imagePath': '',
+        'category': 'Jackets',
+        'mainCategory': 'Outerwear',
+        'brand': 'Denim Jacket',
+        'size': 'M',
+        'price': '89.99',
+        'tags': 'casual,spring',
+        'colors': 'blue',
+        'private': 0,
+        'datePurchased': '2024-03-15',
+      },
+    ];
+
+    for (final item in sampleItems) {
+      await db.insert('items', item);
+    }
+
+    // Sample outfits
+    final sampleOutfits = [
+      {
+        'name': 'Casual Weekend',
+        'accessoriesPath': '',
+        'topPath': '',
+        'bottomPath': '',
+        'shoesPath': '',
+        'bagPath': '',
+      },
+      {
+        'name': 'Office Ready',
+        'accessoriesPath': '',
+        'topPath': '',
+        'bottomPath': '',
+        'shoesPath': '',
+        'bagPath': '',
+      },
+      {
+        'name': 'Evening Out',
+        'accessoriesPath': '',
+        'topPath': '',
+        'bottomPath': '',
+        'shoesPath': '',
+        'bagPath': '',
+      },
+    ];
+
+    for (final outfit in sampleOutfits) {
+      await db.insert('outfits', outfit);
+    }
+
+    print('✅ Sample data seeded successfully');
+  }
+
+  /// Public method to seed sample data if database is empty
+  Future<void> seedSampleDataIfEmpty() async {
+    final db = await database;
+    final itemCount = Sqflite.firstIntValue(
+          await db.rawQuery('SELECT COUNT(*) FROM items'),
+        ) ??
+        0;
+
+    if (itemCount == 0) {
+      await _seedSampleData(db);
+    }
   }
 
   // 👕 ITEMS METHODS

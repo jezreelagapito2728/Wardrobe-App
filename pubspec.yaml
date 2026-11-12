@@ -30,6 +30,8 @@ dependencies:
   visibility_detector: ^0.4.0+2   # refreshes weather when the screen is shown
   cupertino_icons: ^1.0.8
   permission_handler: ^11.3.0
+  google_sign_in: ^6.2.1
+  smooth_page_indicator: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -50,4 +52,5 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/   # already includes AIWardrobe.png, so the extra line was redundant
+    - assets/
+    - env.json

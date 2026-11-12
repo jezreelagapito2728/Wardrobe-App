@@ -41,48 +41,51 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBv9EA1RuPo3acVXeT1FPcwpDOUajTNszw',
-    appId: '1:804894967830:web:0bf8a7e1573070cb3e0d37',
-    messagingSenderId: '804894967830',
-    projectId: 'closetmate2025',
-    authDomain: 'closetmate2025.firebaseapp.com',
-    storageBucket: 'closetmate2025.firebasestorage.app',
-    measurementId: 'G-CNGDWZX83S',
+    apiKey: 'AIzaSyBPEzruA1SvZrRrZ-c2nNt4c13B5_F1Q_w',
+    appId: '1:699050483630:web:e90e3737b0d62cac4a723f',
+    messagingSenderId: '699050483630',
+    projectId: 'my-wardrobe-app-bf0c2',
+    authDomain: 'my-wardrobe-app-bf0c2.firebaseapp.com',
+    databaseURL: 'https://my-wardrobe-app-bf0c2-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'my-wardrobe-app-bf0c2.firebasestorage.app',
+    measurementId: 'G-B3XGEVL41R',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDGUyvLIo1VVLhEyHTpfNVScpGmC-7mBbs',
-    appId: '1:804894967830:android:9cd753a6480502d93e0d37',
-    messagingSenderId: '804894967830',
-    projectId: 'closetmate2025',
-    storageBucket: 'closetmate2025.firebasestorage.app',
+    apiKey: 'AIzaSyDPOu5hEXcbpk2fOmvMhiy7AcEKAE2xCeY',
+    appId: '1:699050483630:android:fc76066d102a4b904a723f',
+    messagingSenderId: '699050483630',
+    projectId: 'my-wardrobe-app-bf0c2',
+    databaseURL: 'https://my-wardrobe-app-bf0c2-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'my-wardrobe-app-bf0c2.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD0dm1tVu_U1Olbpivi7a3Dhk3QLA5DRe4',
-    appId: '1:804894967830:ios:57b9c350bafedc4d3e0d37',
-    messagingSenderId: '804894967830',
-    projectId: 'closetmate2025',
-    storageBucket: 'closetmate2025.firebasestorage.app',
+    apiKey: 'AIzaSyAx7zG9EK_6ROJnMFt9y_8JyQx_SttcQMw',
+    appId: '1:699050483630:ios:9a14dec7d8d6654e4a723f',
+    messagingSenderId: '699050483630',
+    projectId: 'my-wardrobe-app-bf0c2',
+    databaseURL: 'https://my-wardrobe-app-bf0c2-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'my-wardrobe-app-bf0c2.firebasestorage.app',
     iosBundleId: 'com.example.closetMate',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyD0dm1tVu_U1Olbpivi7a3Dhk3QLA5DRe4',
-    appId: '1:804894967830:ios:57b9c350bafedc4d3e0d37',
-    messagingSenderId: '804894967830',
-    projectId: 'closetmate2025',
-    storageBucket: 'closetmate2025.firebasestorage.app',
+    apiKey: 'AIzaSyAx7zG9EK_6ROJnMFt9y_8JyQx_SttcQMw',
+    appId: '1:699050483630:ios:9a14dec7d8d6654e4a723f',
+    messagingSenderId: '699050483630',
+    projectId: 'my-wardrobe-app-bf0c2',
+    databaseURL: 'https://my-wardrobe-app-bf0c2-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'my-wardrobe-app-bf0c2.firebasestorage.app',
     iosBundleId: 'com.example.closetMate',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBv9EA1RuPo3acVXeT1FPcwpDOUajTNszw',
-    appId: '1:804894967830:web:dc17561860730d703e0d37',
-    messagingSenderId: '804894967830',
-    projectId: 'closetmate2025',
-    authDomain: 'closetmate2025.firebaseapp.com',
-    storageBucket: 'closetmate2025.firebasestorage.app',
-    measurementId: 'G-X2G5FV1YM5',
+    apiKey: 'AIzaSyBPEzruA1SvZrRrZ-c2nNt4c13B5_F1Q_w',
+    appId: '1:699050483630:web:230c53c53fa85a8c4a723f',
+    messagingSenderId: '699050483630',
+    projectId: 'my-wardrobe-app-bf0c2',
+    authDomain: 'my-wardrobe-app-bf0c2.firebaseapp.com',
+    databaseURL: 'https://my-wardrobe-app-bf0c2-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'my-wardrobe-app-bf0c2.firebasestorage.app',
+    measurementId: 'G-7QXTFLJJC3',
   );
 }

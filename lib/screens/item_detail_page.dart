@@ -15,9 +15,9 @@ class ItemDetailPage extends StatelessWidget {
   const ItemDetailPage({
     super.key,
     required this.item,
-    required this.imageFile,
-    required this.imageBytes,
-    required this.isWeb,
+    this.imageFile,
+    this.imageBytes,
+    this.isWeb = false,
   });
 
   @override
@@ -49,7 +49,7 @@ class ItemDetailPage extends StatelessWidget {
               Container(
                 margin: const EdgeInsets.only(right: 16),
                 child: CircleAvatar(
-                  backgroundColor: Colors.white.withOpacity(0.9),
+                  backgroundColor: Colors.white.withValues(alpha: 0.9),
                   child: IconButton(
                     icon: const Icon(Icons.edit, color: Color(0xff1c1c1c)),
                     onPressed: () => _navigateToEdit(context),
@@ -323,7 +323,7 @@ class ItemDetailPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Color(0xff1c1c1c).withOpacity(0.3),
+            color: Color(0xff1c1c1c).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -365,7 +365,7 @@ class ItemDetailPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.15),
+            color: Colors.red.withValues(alpha: 0.15),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

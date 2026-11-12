@@ -2,8 +2,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'create_outfit_page.dart';
-import '../services/local_db.dart';
-import 'create_outfit_page.dart';
 
 class OutfitDetailPage extends StatelessWidget {
   final Map<String, dynamic> outfit;
